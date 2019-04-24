@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"sync"
@@ -24,10 +23,6 @@ type config struct {
 	DataDir string   `env:"DATA_DIR" envDefault:"data/"`
 }
 
-func handleIndex(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, `<!doctype html><meta charset="utf-8"><h1>Ahoj!</h1>`)
-}
-
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("File .env not found, reading configuration from ENV")
@@ -39,8 +34,10 @@ func main() {
 	}
 	log.Println(cfg)
 
+	handleFunc := CreateFileHandler(cfg)
+
 	mux := &http.ServeMux{}
-	mux.HandleFunc("/", handleIndex)
+	mux.HandleFunc("/", handleFunc)
 
 	var wg sync.WaitGroup
 	wg.Add(2)
